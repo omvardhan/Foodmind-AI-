@@ -1,0 +1,755 @@
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodMind AI - Discover Your Culinary Persona</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Hanken+Grotesk:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-card {
+            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hero-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(192, 193, 255, 0.08) 0%, rgba(11, 19, 38, 0) 70%);
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .radar-chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1;
+            margin: auto;
+        }
+        
+        canvas#radarChart {
+            filter: drop-shadow(0 0 10px rgba(192, 193, 255, 0.3));
+        }
+
+        .dev-mode-panel {
+            display: none;
+        }
+        .dev-mode-panel.active {
+            display: block;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#00302a",
+                        "outline": "#908fa0",
+                        "on-surface": "#dae2fd",
+                        "tertiary": "#4fdbc8",
+                        "on-surface-variant": "#c7c4d7",
+                        "inverse-on-surface": "#283044",
+                        "primary-container": "#8083ff",
+                        "on-primary-container": "#0d0096",
+                        "surface-container": "#171f33",
+                        "on-secondary": "#490080",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "inverse-surface": "#dae2fd",
+                        "surface": "#0b1326",
+                        "secondary-container": "#6f00be",
+                        "background": "#0b1326",
+                        "on-tertiary": "#003731",
+                        "on-error-container": "#ffdad6",
+                        "surface-dim": "#0b1326",
+                        "on-tertiary-fixed": "#00201c",
+                        "surface-container-low": "#131b2e",
+                        "outline-variant": "#464554",
+                        "inverse-primary": "#494bd6",
+                        "tertiary-fixed": "#71f8e4",
+                        "on-background": "#dae2fd",
+                        "on-tertiary-fixed-variant": "#005048",
+                        "on-primary-fixed": "#07006c",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "surface-variant": "#2d3449",
+                        "surface-bright": "#31394d",
+                        "on-secondary-fixed": "#2c0051",
+                        "surface-container-high": "#222a3d",
+                        "on-primary": "#1000a9",
+                        "error": "#ffb4ab",
+                        "primary-fixed": "#e1e0ff",
+                        "secondary": "#ddb7ff",
+                        "primary": "#c0c1ff",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "surface-container-highest": "#2d3449",
+                        "error-container": "#93000a",
+                        "tertiary-fixed-dim": "#4fdbc8",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#f0dbff",
+                        "surface-container-lowest": "#060e20",
+                        "tertiary-container": "#00a392",
+                        "on-secondary-container": "#d6a9ff",
+                        "surface-tint": "#c0c1ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "unit": "4px",
+                        "gutter": "24px",
+                        "2xl": "64px",
+                        "container-max": "1280px",
+                        "sm": "8px",
+                        "xl": "40px",
+                        "lg": "24px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-md": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-body-md text-on-surface selection:bg-primary/30">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-md border-b border-white/10">
+<nav class="flex justify-between items-center px-lg py-md max-w-container-max mx-auto">
+<div class="flex items-center gap-sm cursor-pointer" onclick="navigateTo('home')">
+<span class="material-symbols-outlined text-primary text-[32px]">restaurant_menu</span>
+<span class="font-display-lg text-headline-md tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary to-tertiary">FoodMind AI</span>
+</div>
+<div class="hidden md:flex items-center gap-lg">
+<a class="text-on-surface hover:text-primary transition-colors font-label-md text-label-md" href="#" onclick="navigateTo('home')">Home</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="#" onclick="showNameScreen()">Quiz</a>
+</div>
+<div class="flex items-center gap-md">
+<button class="active:scale-95 transition-transform hover:bg-white/10 p-sm rounded-full opacity-20 hover:opacity-100 transition-opacity" onclick="toggleDevMode()">
+<span class="material-symbols-outlined text-on-surface text-sm">terminal</span>
+</button>
+<button class="active:scale-95 transition-transform hover:bg-white/10 p-sm rounded-full">
+<span class="material-symbols-outlined text-on-surface">dark_mode</span>
+</button>
+</div>
+</nav>
+</header>
+<main class="relative">
+<!-- HOME SECTION -->
+<section class="view-section active pt-2xl" id="view-home">
+<section class="relative min-h-[90vh] flex items-center justify-center px-lg overflow-hidden hero-gradient">
+<div class="max-w-container-max w-full grid grid-cols-1 lg:grid-cols-12 gap-xl items-center relative z-10">
+<div class="lg:col-span-7 flex flex-col items-start gap-lg text-left">
+<div class="glass-card px-md py-xs rounded-full inline-flex items-center gap-sm border-primary/20">
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-md text-label-md text-primary-fixed-dim uppercase">PERSONALITY PROFILING PLATFORM</span>
+</div>
+<h1 class="font-display-lg text-display-lg leading-tight">🍽️ FoodMind AI</h1>
+<h2 class="font-headline-lg text-headline-lg text-primary-fixed-dim">
+                            Discover your true culinary soul through behavioral science.
+                        </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[600px]">
+                            Decode your tastes to reveal deep psychological insights through our validated culinary metaphor engine.
+                        </p>
+<!-- STATS SECTION -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-md w-full mt-md">
+<div class="glass-card p-md rounded-xl text-center">
+<div class="text-primary font-bold text-headline-md">15</div>
+<div class="text-xs text-outline uppercase tracking-wider">Questions</div>
+</div>
+<div class="glass-card p-md rounded-xl text-center">
+<div class="text-tertiary font-bold text-headline-md">12</div>
+<div class="text-xs text-outline uppercase tracking-wider">Traits</div>
+</div>
+<div class="glass-card p-md rounded-xl text-center">
+<div class="text-secondary font-bold text-headline-md">10</div>
+<div class="text-xs text-outline uppercase tracking-wider">Archetypes</div>
+</div>
+<div class="glass-card p-md rounded-xl text-center">
+<div class="text-white font-bold text-headline-md">AI</div>
+<div class="text-xs text-outline uppercase tracking-wider">Engine</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-md mt-md">
+<button class="bg-gradient-to-r from-primary-container to-secondary-container text-on-primary-container px-2xl py-md rounded-xl font-headline-md text-headline-md hover:shadow-[0_0_30px_rgba(128,131,255,0.4)] transition-all active:scale-95" onclick="showNameScreen()">
+                                Start The Quiz
+                            </button>
+<button class="glass-card px-xl py-md rounded-xl font-headline-md text-headline-md hover:bg-white/10 transition-all border border-white/20">
+                                Learn More
+                            </button>
+</div>
+</div>
+<div class="lg:col-span-5 relative flex justify-center items-center">
+<div class="relative z-20 group">
+<img alt="Hero Food" class="w-full max-w-[450px] floating drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl" src="https://lh3.googleusercontent.com/aida/AP1WRLu3MrHZq1VtCB_LjYfEbiz6goJh2YSB9uZFONRTZtZI7dPPF6xAMwdyhUxyxPf6K_fMiFVj1Me4c-tFV3IvBd8XAxpgBhNk-jorHP9vUrUibPeBWPBNob2_P5Na_kITvZCfreHZhm0cd0jHtCrhxGUjyoN9_D11U-VsdM3SU_ego7jgp4iYWCHfRKqIbfK4twwEjJqS6qaMY9GS2psKpTLCwM99uVW1XzFc9l0_i1V226i7bqtS0D30Ex8"/>
+<div class="absolute inset-0 bg-primary/20 blur-[60px] rounded-full -z-10 animate-pulse"></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<!-- NAME INPUT SECTION -->
+<section class="view-section pt-2xl h-[80vh] flex items-center justify-center px-lg" id="view-name">
+<div class="max-w-md w-full glass-card p-xl rounded-2xl text-center fade-in">
+<span class="material-symbols-outlined text-primary text-[48px] mb-md">account_circle</span>
+<h2 class="font-headline-lg text-headline-lg mb-md">Welcome!</h2>
+<p class="text-on-surface-variant mb-xl">To personalize your culinary report, what should we call you?</p>
+<input class="w-full bg-surface-container border border-outline-variant rounded-xl px-lg py-md text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all mb-xl" id="user-name-input" placeholder="Enter your name..." type="text"/>
+<button class="w-full bg-primary text-on-primary py-md rounded-xl font-headline-md hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50" id="name-submit-btn" onclick="startQuiz()">
+                    Continue to Quiz
+                </button>
+</div>
+</section>
+<!-- QUIZ SECTION -->
+<section class="view-section pt-[120px] pb-2xl px-lg" id="view-quiz">
+<div class="max-w-2xl mx-auto">
+<div class="flex justify-between items-end mb-sm">
+<p class="font-headline-md text-headline-md text-primary">Discovery Phase</p>
+<p class="font-label-md text-label-md text-outline" id="quiz-progress-text">Question 1 of 15</p>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden mb-xl">
+<div class="h-full bg-gradient-to-r from-primary to-tertiary transition-all duration-500 w-[0%]" id="quiz-progress-bar"></div>
+</div>
+<div class="fade-in" id="quiz-question-container"></div>
+</div>
+</section>
+<!-- LOADING SECTION -->
+<section class="view-section pt-2xl h-screen flex flex-col items-center justify-center relative px-lg" id="view-loading">
+<div class="relative w-48 h-48 mb-xl flex items-center justify-center">
+<div class="absolute inset-0 rounded-full border-2 border-primary/20 animate-pulse"></div>
+<div class="animate-bounce">
+<span class="material-symbols-outlined text-[96px] text-primary" id="loading-icon" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+</div>
+<div class="max-w-md text-center">
+<h1 class="font-headline-lg text-headline-lg text-primary-fixed-dim mb-md" id="loading-text">Synthesizing behavioral patterns...</h1>
+<div class="w-full max-w-xs h-1.5 bg-surface-container-highest rounded-full overflow-hidden mb-sm mx-auto">
+<div class="h-full bg-gradient-to-r from-primary to-tertiary w-0" id="loading-progress-bar"></div>
+</div>
+<span class="font-label-md text-label-md text-outline" id="loading-percent">0%</span>
+</div>
+</section>
+<!-- RESULTS SECTION -->
+<section class="view-section pt-[120px] pb-2xl px-gutter max-w-container-max mx-auto" id="view-results">
+<div class="dev-mode-panel mb-lg glass-card p-md rounded-xl bg-surface-container-highest/50 border-primary/30 text-xs font-mono overflow-auto">
+<h4 class="text-primary mb-2">DEVELOPER CONSOLE: TRAIT SCORES</h4>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4" id="dev-trait-data"></div>
+</div>
+<section class="mb-2xl text-center fade-in">
+<div class="inline-flex items-center gap-xs mb-md px-md py-xs rounded-full bg-primary-container/20 border border-primary/30">
+<span class="material-symbols-outlined text-primary text-[18px]">target</span>
+<span class="text-primary font-label-md text-label-md uppercase tracking-widest">Culinary Profile Matched</span>
+</div>
+<div class="flex flex-col md:flex-row items-center justify-center gap-xl mt-xl">
+<div class="relative group">
+<div class="absolute inset-0 bg-primary/20 blur-[64px] rounded-full"></div>
+<img alt="Result Image" class="relative z-10 w-[280px] md:w-[380px] object-contain floating rounded-3xl" id="result-img" src=""/>
+</div>
+<div class="text-center md:text-left max-w-md">
+<h1 class="font-display-lg text-display-lg text-white mb-xs" id="result-user-greeting">User, you are a</h1>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-sm" id="result-title">Archetype</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-xl" id="result-tagline">Tagline goes here.</p>
+<div class="glass-card p-lg rounded-xl border-primary/20">
+<div class="flex justify-between items-end mb-xs">
+<span class="font-label-md text-label-md text-primary" id="result-match-label">Match Similarity</span>
+<span class="font-headline-md text-headline-md text-white" id="result-score">98%</span>
+</div>
+<div class="h-2 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-secondary w-[98%] shimmer" id="result-score-bar"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg mb-2xl">
+<!-- PERSONALITY RADAR -->
+<div class="md:col-span-12 lg:col-span-5 glass-card p-xl rounded-xl flex flex-col items-center">
+<h3 class="font-headline-md text-headline-md text-white mb-lg text-center">12-Trait Behavioral Map</h3>
+<div class="radar-chart-container">
+<canvas id="radarChart"></canvas>
+</div>
+<p class="mt-md text-sm text-center text-outline px-md">Visualizing your scores across all 12 key personality metrics.</p>
+</div>
+<!-- DYNAMIC EXPLANATION & STRONGEST TRAITS -->
+<div class="md:col-span-12 lg:col-span-7 flex flex-col gap-lg">
+<!-- STRONGEST TRAITS BOX -->
+<div class="glass-card p-xl rounded-xl">
+<h3 class="font-label-md text-label-md text-secondary mb-md uppercase tracking-widest">Your Strongest Traits</h3>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-md" id="result-strongest-traits">
+<!-- Dynamic Top 3 -->
+</div>
+</div>
+<!-- WHY THIS MATCH -->
+<div class="glass-card p-xl rounded-xl">
+<div class="flex items-center gap-sm mb-lg">
+<span class="material-symbols-outlined text-tertiary">analytics</span>
+<h2 class="font-headline-md text-headline-md text-white">Why This Match?</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-xl" id="result-explanation"></p>
+<h3 class="font-label-md text-label-md text-tertiary mb-md uppercase tracking-widest">Growth Insights</h3>
+<div class="grid grid-cols-1 gap-md" id="result-growth-highlights"></div>
+</div>
+</div>
+<!-- OTHER MATCHES -->
+<div class="md:col-span-12 glass-card p-xl rounded-xl">
+<h3 class="font-label-md text-label-md text-outline mb-md uppercase tracking-widest">Other Strong Matches</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md" id="result-other-matches"></div>
+</div>
+<!-- STRENGTHS -->
+<div class="md:col-span-6 glass-card p-xl rounded-xl">
+<h3 class="font-label-md text-label-md text-secondary mb-md uppercase tracking-widest">Your Core Strengths</h3>
+<div class="flex flex-col gap-sm" id="result-strengths-list"></div>
+</div>
+<!-- CAREER PATHS -->
+<div class="md:col-span-6 glass-card p-xl rounded-xl">
+<h3 class="font-label-md text-label-md text-primary mb-md uppercase tracking-widest">Recommended Careers</h3>
+<div class="flex flex-wrap gap-xs mb-xl" id="result-careers"></div>
+<h3 class="font-label-md text-label-md text-primary mb-md uppercase tracking-widest">The Habit to Watch</h3>
+<p class="text-on-surface-variant" id="result-habit"></p>
+</div>
+<!-- WORK BEST WITH -->
+<div class="md:col-span-12 glass-card p-xl rounded-xl border-l-4 border-tertiary bg-gradient-to-r from-tertiary/10 to-transparent">
+<h3 class="font-label-md text-label-md text-tertiary mb-sm uppercase">You Work Best With</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg" id="result-collabs"></div>
+</div>
+<!-- 7-DAY OUTLOOK -->
+<div class="md:col-span-12 glass-card p-xl rounded-xl border-l-4 border-secondary bg-gradient-to-r from-secondary-container/10 to-transparent">
+<h3 class="font-label-md text-label-md text-secondary mb-sm uppercase">Your Next 7 Days</h3>
+<p class="text-on-surface italic" id="result-fortune"></p>
+</div>
+</div>
+<div class="flex flex-col md:flex-row justify-center items-center gap-md">
+<button class="w-full md:w-auto px-2xl py-md rounded-full bg-gradient-to-r from-primary to-secondary text-white font-headline-md text-headline-md shadow-lg shadow-primary/20 active:scale-95 transition-all" onclick="shareResults()">
+                    Share My Result
+                </button>
+<button class="w-full md:w-auto px-xl py-md rounded-full text-outline hover:text-white transition-colors font-label-md text-label-md flex items-center justify-center gap-xs" onclick="downloadReport()">
+<span class="material-symbols-outlined">download</span> Download Report
+                </button>
+<button class="w-full md:w-auto px-xl py-md rounded-full text-outline hover:text-white transition-colors font-label-md text-label-md flex items-center justify-center gap-xs" onclick="restartQuiz()">
+<span class="material-symbols-outlined">replay</span> Restart Quiz
+                </button>
+</div>
+</section>
+</main>
+<footer class="w-full py-xl bg-surface-container-lowest border-t border-outline-variant/20 mt-2xl">
+<div class="max-w-container-max mx-auto px-lg grid grid-cols-1 md:grid-cols-2 gap-xl">
+<div class="flex flex-col gap-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary text-[24px]">restaurant_menu</span>
+<span class="font-headline-sm text-on-surface">FoodMind AI</span>
+</div>
+<p class="font-body-md text-label-md text-outline max-w-sm">
+                    FoodMind AI is a professional personality assessment platform using culinary metaphors to map behavioral traits and psychometric profiles.
+                </p>
+<p class="text-[12px] text-outline/60 mt-xs">Built by Om Vardhan Singh</p>
+<p class="text-[10px] text-outline/40">Technologies: Prompt Engineering, AI-Assisted Development, JavaScript, Behavioral Profiling Concepts.</p>
+</div>
+<div class="flex flex-col md:items-end justify-between">
+<div class="text-right">
+<h4 class="font-label-md text-white mb-xs">About This Project</h4>
+<p class="text-outline text-label-md">Developed by Om Vardhan Singh</p>
+</div>
+<p class="font-body-md text-label-md text-outline mt-md">© 2024 FoodMind AI. All rights reserved.</p>
+</div>
+</div>
+</footer>
+<script>
+        const TRAITS = ['discipline', 'focus', 'curiosity', 'social', 'creativity', 'leadership', 'optimism', 'resilience', 'independence', 'ambition', 'adventure', 'empathy'];
+
+        const QUESTION_BANK = [
+            { q: "How do you approach a complex problem?", icon: "architecture", options: [{ text: "Break it down into small, logical parts.", weights: { discipline: 10, focus: 8, ambition: 4 } }, { text: "Look for creative, outside-the-box connections.", weights: { creativity: 10, curiosity: 8, adventure: 4 } }, { text: "Ask others for their perspective first.", weights: { social: 10, empathy: 8, resilience: 4 } }] },
+            { q: "What's your primary motivation for work?", icon: "military_tech", options: [{ text: "Achieving mastery and high performance.", weights: { ambition: 10, leadership: 6, discipline: 6 } }, { text: "Solving interesting and unique challenges.", weights: { curiosity: 10, focus: 6, independence: 6 } }, { text: "Making a positive impact on my community.", weights: { empathy: 10, optimism: 6, social: 6 } }] },
+            { q: "How do you react to sudden, unplanned changes?", icon: "cyclone", options: [{ text: "Adapt quickly and find the silver lining.", weights: { resilience: 10, optimism: 8, adventure: 4 } }, { text: "Analyze the situation to regain control.", weights: { focus: 10, discipline: 8, independence: 4 } }, { text: "Check in with my team or friends for support.", weights: { social: 10, empathy: 8, resilience: 4 } }] },
+            { q: "What's your ideal work environment?", icon: "workspaces", options: [{ text: "Highly structured and orderly.", weights: { discipline: 10, focus: 6, leadership: 4 } }, { text: "Flexible and full of creative inspiration.", weights: { creativity: 10, curiosity: 6, independence: 4 } }, { text: "Collaborative and social.", weights: { social: 10, empathy: 6, optimism: 4 } }] },
+            { q: "How do you spend your free time?", icon: "diversity_2", options: [{ text: "Self-improvement or learning a new skill.", weights: { curiosity: 10, ambition: 6, discipline: 6 } }, { text: "Exploring new places or trying new things.", weights: { adventure: 10, optimism: 6, curiosity: 6 } }, { text: "Relaxing with loved ones.", weights: { social: 10, empathy: 8, optimism: 6 } }] },
+            { q: "What kind of leader are you?", icon: "groups", options: [{ text: "The visionary who inspires action.", weights: { leadership: 10, optimism: 6, creativity: 6 } }, { text: "The strategist who ensures perfection.", weights: { discipline: 10, focus: 8, ambition: 6 } }, { text: "The coach who supports the team.", weights: { empathy: 10, social: 6, resilience: 6 } }] },
+            { q: "What's your relationship with risk?", icon: "warning", options: [{ text: "Calculated: only when the reward is worth it.", weights: { focus: 10, discipline: 6, ambition: 6 } }, { text: "Thrilling: I love the excitement of the unknown.", weights: { adventure: 10, curiosity: 6, ambition: 6 } }, { text: "Cautious: I prefer stability and safety.", weights: { resilience: 10, discipline: 6, focus: 6 } }] },
+            { q: "How do you handle criticism?", icon: "rate_review", options: [{ text: "I take it as data to improve myself.", weights: { resilience: 10, discipline: 6, ambition: 6 } }, { text: "I look at it objectively to see if it's true.", weights: { focus: 10, independence: 6, curiosity: 6 } }, { text: "I value the feedback and try to understand the source.", weights: { empathy: 10, social: 6, optimism: 6 } }] },
+            { q: "What describes your 'core' energy?", icon: "bolt", options: [{ text: "Calm, steady, and focused.", weights: { focus: 10, discipline: 6, resilience: 6 } }, { text: "High-intensity and ambitious.", weights: { ambition: 10, leadership: 6, adventure: 6 } }, { text: "Bubbly, warm, and inviting.", weights: { optimism: 10, social: 6, empathy: 6 } }] },
+            { q: "Which of these matters most to you?", icon: "verified_user", options: [{ text: "Authenticity and independence.", weights: { independence: 10, creativity: 6, resilience: 6 } }, { text: "Legacy and achievement.", weights: { ambition: 10, leadership: 8, discipline: 6 } }, { text: "Harmony and connection.", weights: { social: 10, empathy: 8, optimism: 6 } }] },
+            { q: "Pick a flavor profile that resonates.", icon: "restaurant", options: [{ text: "Complex and spicy.", weights: { adventure: 10, curiosity: 8, creativity: 6 } }, { text: "Clean and refined.", weights: { discipline: 10, focus: 8, independence: 6 } }, { text: "Sweet and comforting.", weights: { optimism: 10, social: 8, empathy: 6 } }] },
+            { q: "How do you make big life decisions?", icon: "balance", options: [{ text: "By following my intuition and gut feeling.", weights: { creativity: 10, independence: 8, adventure: 6 } }, { text: "By weighing all pros and cons carefully.", weights: { focus: 10, discipline: 8, ambition: 6 } }, { text: "By considering how it affects my circle.", weights: { empathy: 10, social: 8, optimism: 6 } }] },
+            { q: "When working in a team, you are usually...", icon: "group_work", options: [{ text: "The one setting the pace and standard.", weights: { leadership: 10, discipline: 8, focus: 6 } }, { text: "The one ensuring everyone is happy.", weights: { empathy: 10, social: 10, optimism: 6 } }, { text: "The one coming up with the core idea.", weights: { creativity: 10, curiosity: 10, independence: 6 } }] },
+            { q: "Your ideal vacation involves...", icon: "flight", options: [{ text: "Deep cultural immersion and history.", weights: { curiosity: 10, empathy: 6, discipline: 6 } }, { text: "Extreme sports and unknown paths.", weights: { adventure: 10, resilience: 8, independence: 6 } }, { text: "A luxury resort with perfect service.", weights: { ambition: 10, focus: 6, optimism: 6 } }] },
+            { q: "Success is defined by...", icon: "trophy", options: [{ text: "The depth of one's mastery.", weights: { discipline: 10, focus: 10, independence: 6 } }, { text: "The size of one's impact on others.", weights: { leadership: 10, empathy: 8, social: 8 } }, { text: "The freedom to do what you love.", weights: { independence: 10, creativity: 10, optimism: 8 } }] }
+        ];
+
+        const PERSONALITIES = [
+            { id: 'biryani', title: 'Biryani Strategist', img: 'https://images.unsplash.com/photo-1563379091339-03b21bc4a4f8?auto=format&fit=crop&q=80&w=400', vector: { discipline: 8, focus: 9, curiosity: 7, social: 5, creativity: 6, leadership: 9, optimism: 6, resilience: 8, independence: 6, ambition: 10, adventure: 5, empathy: 5 }, tagline: 'Complex, layered, and built for ultimate impact.', explanation: 'You manage massive complexity with ease. Your ambition and strategic focus allow you to build systems that scale.', careers: ['CEO', 'Systems Architect', 'Political Strategist', 'Business Strategy'], strengths: ['Strategic depth', 'Handling complexity', 'Resilience'], growth: { strength: 'Structural thinking and long-term planning.', habit: 'Impatience with slow progress.', skill: 'Delegation and trust.' }, fortune: 'Focus on one high-impact goal this week. Your patience will be tested, but your long-term plan is solid.', workBestWith: ['Matcha Sage', 'Pizza Socializer', 'Ramen Innovator'] },
+            { id: 'sushi', title: 'Sushi Perfectionist', img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&q=80&w=400', vector: { discipline: 10, focus: 10, curiosity: 4, social: 2, creativity: 5, leadership: 6, optimism: 5, resilience: 7, independence: 8, ambition: 7, adventure: 1, empathy: 4 }, tagline: 'Precision, clarity, and mastery of the essential.', explanation: 'You value quality over quantity. Your focus on discipline and precise execution makes you a natural master of detail.', careers: ['Software Engineer', 'Quality Assurance', 'Precision Manufacturing', 'Clinical Researcher'], strengths: ['Attention to detail', 'Methodical approach', 'Patience'], growth: { strength: 'Unmatched focus in high-pressure tasks.', habit: 'Over-indexing on perfectionism.', skill: 'Broaden your lens to include creative input.' }, fortune: 'A week of breakthrough clarity awaits you. Stick to your routines; they are your anchor.', workBestWith: ['Pizza Socializer', 'Ramen Innovator', 'Taco Trailblazer'] },
+            { id: 'pizza', title: 'Pizza Socializer', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80&w=400', vector: { discipline: 3, focus: 4, curiosity: 6, social: 10, creativity: 7, leadership: 6, optimism: 10, resilience: 6, independence: 4, ambition: 5, adventure: 8, empathy: 8 }, tagline: 'Universal, adaptable, and the glue of any group.', explanation: 'You are approachable and optimistic. You bring people together and make every situation better just by being there.', careers: ['PR Director', 'Event Planner', 'Community Manager', 'Partnerships Lead'], strengths: ['Adaptability', 'Networking', 'Optimism'], growth: { strength: 'Inclusive leadership and networking.', habit: 'Over-committing to social events.', skill: 'Setting firm boundaries.' }, fortune: 'New connections will bring unexpected opportunities this weekend. Stay open to new faces!', workBestWith: ['Sushi Perfectionist', 'Biryani Strategist', 'Matcha Sage'] },
+            { id: 'matcha', title: 'Matcha Sage', img: 'https://images.unsplash.com/photo-1582733315328-d4244c0000aa?auto=format&fit=crop&q=80&w=400', vector: { discipline: 7, focus: 7, curiosity: 6, social: 8, creativity: 5, leadership: 6, optimism: 9, resilience: 10, independence: 5, ambition: 4, adventure: 3, empathy: 10 }, tagline: 'Grounding, mindful, and the heart of the team.', explanation: 'You are the calm in the storm. Your empathy allows you to see all sides and keep the peace in any environment.', careers: ['HR Consultant', 'Conflict Mediator', 'Wellness Coordinator', 'Psychotherapist'], strengths: ['Emotional Intelligence', 'Calmness', 'Mediation'], growth: { strength: 'High emotional intelligence.', habit: 'Neglecting own needs for others.', skill: 'Assertive communication.' }, fortune: 'Your calm influence will resolve a major conflict this week. Stay consistent with your self-care habits.', workBestWith: ['Biryani Strategist', 'Espresso Executor', 'Pizza Socializer'] },
+            { id: 'espresso', title: 'Espresso Executor', img: 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&q=80&w=400', vector: { discipline: 9, focus: 10, curiosity: 6, social: 3, creativity: 5, leadership: 8, optimism: 6, resilience: 9, independence: 9, ambition: 10, adventure: 6, empathy: 3 }, tagline: 'Intense, efficient, and results-oriented.', explanation: 'You are high-octane and efficiency-focused. You get things done with remarkable speed and precision.', careers: ['Stock Trader', 'Project Manager', 'Startup Founder', 'Logistics Analyst'], strengths: ['Speed', 'Intensity', 'Autonomy'], growth: { strength: 'Extreme productivity.', habit: 'Potential for rapid burnout.', skill: 'Intentional rest and recovery.' }, fortune: 'Speed is your advantage this week. Double down on your top priority and finish strong.', workBestWith: ['Matcha Sage', 'Sushi Perfectionist', 'Taco Trailblazer'] },
+            { id: 'taco', title: 'Taco Trailblazer', img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&q=80&w=400', vector: { discipline: 4, focus: 5, curiosity: 8, social: 7, creativity: 9, leadership: 7, optimism: 9, resilience: 8, independence: 10, ambition: 7, adventure: 10, empathy: 6 }, tagline: 'Vibrant, bold, and unapologetically unique.', explanation: 'You thrive on variety and freedom. Your adventurous spirit is your greatest guide through the unknown.', careers: ['Travel Journalist', 'Entrepreneur', 'Expedition Lead', 'Creative Director'], strengths: ['Creativity', 'Individuality', 'Bravery'], growth: { strength: 'High adaptability and infectious energy.', habit: 'Avoiding routine but necessary tasks.', skill: 'Building systems for consistency.' }, fortune: 'A journey (mental or physical) starts today. Embrace the detour; it leads somewhere better.', workBestWith: ['Ramen Innovator', 'Espresso Executor', 'Sushi Perfectionist'] },
+            { id: 'ramen', title: 'Ramen Innovator', img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&q=80&w=400', vector: { discipline: 6, focus: 8, curiosity: 10, social: 5, creativity: 10, leadership: 5, optimism: 7, resilience: 9, independence: 7, ambition: 8, adventure: 7, empathy: 5 }, tagline: 'Complex, layered, and endlessly experimenting.', explanation: 'You are driven by deep curiosity to understand how things work and the creativity to reinvent them.', careers: ['Product Designer', 'R&D Scientist', 'UX Architect', 'Data Scientist'], strengths: ['Synthesis', 'Curiosity', 'Persistence'], growth: { strength: 'Synthesizing disparate ideas.', habit: 'Starting too many projects at once.', skill: 'Finishing the final 10% of tasks.' }, fortune: 'That "impossible" problem? You will find the workaround by Tuesday. Trust your curiosity.', workBestWith: ['Sushi Perfectionist', 'Taco Trailblazer', 'Espresso Executor'] },
+            { id: 'burger', title: 'Burger Visionary', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=400', vector: { discipline: 6, focus: 7, curiosity: 7, social: 7, creativity: 8, leadership: 10, optimism: 8, resilience: 7, independence: 6, ambition: 9, adventure: 8, empathy: 6 }, tagline: 'Bold, iconic, and driving for maximum impact.', explanation: 'You are a natural leader who aims for the top. You value scale, impact, and high-performance results.', careers: ['Marketing Director', 'Operations Manager', 'Team Coach', 'Product Manager'], strengths: ['Impact', 'Boldness', 'Decisiveness'], growth: { strength: 'High decisiveness and drive.', habit: 'Steamrolling others in group settings.', skill: 'Active listening and collaboration.' }, fortune: 'Take a big swing this week. The odds are in your favor for reaching a major milestone.', workBestWith: ['Matcha Sage', 'Sushi Perfectionist', 'Pizza Socializer'] },
+            { id: 'dimsum', title: 'Dim Sum Collaborator', img: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&q=80&w=400', vector: { discipline: 7, focus: 6, curiosity: 9, social: 9, creativity: 8, leadership: 7, optimism: 8, resilience: 7, independence: 5, ambition: 6, adventure: 7, empathy: 9 }, tagline: 'The art of many parts working as one.', explanation: 'You excel in collaborative environments where variety and teamwork are essential for the outcome.', careers: ['Agile Coach', 'Event Producer', 'Program Manager', 'Account Executive'], strengths: ['Collaboration', 'Inclusivity', 'Multitasking'], growth: { strength: 'High inclusivity and group facilitation.', habit: 'Analysis paralysis when working alone.', skill: 'Rapid, solo decision making.' }, fortune: 'A group project will gain significant momentum. Your role is the critical catalyst this week.', workBestWith: ['Sushi Perfectionist', 'Biryani Strategist', 'Taco Trailblazer'] },
+            { id: 'croissant', title: 'Croissant Specialist', img: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&q=80&w=400', vector: { discipline: 10, focus: 9, curiosity: 5, social: 4, creativity: 8, leadership: 6, optimism: 5, resilience: 8, independence: 7, ambition: 9, adventure: 4, empathy: 4 }, tagline: 'Multi-layered success built on patience.', explanation: 'You understand that greatness takes time. Your ambition is tempered by the discipline of a master craftsman.', careers: ['Financial Analyst', 'Real Estate Developer', 'Architect', 'Asset Manager'], strengths: ['Patient ambition', 'Craftsmanship', 'Structure'], growth: { strength: 'Long-term structural thinking.', habit: 'Rigidity when facing sudden changes.', skill: 'Cultivating more spontaneity.' }, fortune: 'A slow-burning project finally reaches fruition. Celebrate the process and the result.', workBestWith: ['Pizza Socializer', 'Matcha Sage', 'Biryani Strategist'] }
+        ];
+
+        let state = {
+            currentScreen: 'home',
+            userName: '',
+            currentQuestionIndex: 0,
+            scores: Object.fromEntries(TRAITS.map(t => [t, 0])),
+            questions: [],
+            devMode: false,
+            radarChart: null
+        };
+
+        function navigateTo(screenId) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById('view-' + screenId);
+            if (target) {
+                target.classList.add('active');
+                state.currentScreen = screenId;
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function showNameScreen() {
+            navigateTo('name');
+        }
+
+        function toggleDevMode() {
+            state.devMode = !state.devMode;
+            document.querySelectorAll('.dev-mode-panel').forEach(p => p.classList.toggle('active', state.devMode));
+        }
+
+        function startQuiz() {
+            const nameInput = document.getElementById('user-name-input');
+            if (nameInput.value.trim() === "") {
+                nameInput.classList.add('border-error');
+                return;
+            }
+            state.userName = nameInput.value;
+            state.scores = Object.fromEntries(TRAITS.map(t => [t, 0]));
+            state.currentQuestionIndex = 0;
+            state.questions = [...QUESTION_BANK].sort(() => Math.random() - 0.5).slice(0, 15);
+            
+            renderQuestion();
+            navigateTo('quiz');
+        }
+
+        function renderQuestion() {
+            const q = state.questions[state.currentQuestionIndex];
+            const container = document.getElementById('quiz-question-container');
+            const progressText = document.getElementById('quiz-progress-text');
+            const progressBar = document.getElementById('quiz-progress-bar');
+
+            const percent = ((state.currentQuestionIndex) / state.questions.length) * 100;
+            progressBar.style.width = percent + '%';
+            progressText.innerText = `Question ${state.currentQuestionIndex + 1} of ${state.questions.length}`;
+
+            container.innerHTML = `
+                <div class="glass-card p-xl rounded-2xl mb-lg">
+                    <div class="flex items-center gap-md mb-lg">
+                        <span class="material-symbols-outlined text-primary text-[40px]">${q.icon}</span>
+                        <h2 class="font-headline-lg text-headline-lg">${q.q}</h2>
+                    </div>
+                    <div class="grid grid-cols-1 gap-md">
+                        ${q.options.map((opt, i) => `
+                            <button onclick="handleAnswer(${JSON.stringify(opt.weights).replace(/"/g, '&quot;')})" 
+                                    class="text-left p-lg rounded-xl border border-white/10 hover:border-primary hover:bg-primary/10 transition-all flex items-center justify-between group">
+                                <span class="font-body-lg text-body-lg group-hover:text-primary transition-colors">${opt.text}</span>
+                                <span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-primary">arrow_forward</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleAnswer(weights) {
+            for (const [trait, val] of Object.entries(weights)) {
+                state.scores[trait] += val;
+            }
+
+            if (state.currentQuestionIndex < state.questions.length - 1) {
+                state.currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                runLoadingSequence();
+            }
+        }
+
+        function runLoadingSequence() {
+            navigateTo('loading');
+            let progress = 0;
+            const bar = document.getElementById('loading-progress-bar');
+            const percent = document.getElementById('loading-percent');
+            const text = document.getElementById('loading-text');
+            
+            const stages = ["Synthesizing behavioral patterns...", "Mapping flavor profiles to persona...", "Generating neural psychogram...", "Plating results..."];
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 8;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    calculateMatch();
+                }
+                bar.style.width = progress + '%';
+                percent.innerText = Math.floor(progress) + '%';
+                text.innerText = stages[Math.floor((progress/101) * stages.length)];
+            }, 100);
+        }
+
+        function calculateMatch() {
+            const maxScoreFound = Math.max(...Object.values(state.scores));
+            const normalizedScores = {};
+            TRAITS.forEach(t => {
+                normalizedScores[t] = (state.scores[t] / maxScoreFound) * 10;
+            });
+
+            const results = PERSONALITIES.map(p => {
+                let distance = 0;
+                TRAITS.forEach(t => {
+                    distance += Math.pow(normalizedScores[t] - (p.vector[t] || 0), 2);
+                });
+                const similarity = 100 - (Math.sqrt(distance) / Math.sqrt(TRAITS.length * 100)) * 100;
+                return { ...p, similarity: Math.min(99.9, similarity) };
+            });
+
+            results.sort((a, b) => b.similarity - a.similarity);
+            showResults(results, normalizedScores);
+        }
+
+        function showResults(results, normalizedScores) {
+            const bestMatch = results[0];
+            const secondaryMatches = results.slice(1, 3); // Top 2 other matches
+
+            document.getElementById('result-user-greeting').innerText = `${state.userName}, you are a`;
+            document.getElementById('result-title').innerText = bestMatch.title;
+            document.getElementById('result-img').src = bestMatch.img;
+            document.getElementById('result-tagline').innerText = bestMatch.tagline;
+            document.getElementById('result-score').innerText = Math.round(bestMatch.similarity) + '%';
+            document.getElementById('result-score-bar').style.width = bestMatch.similarity + '%';
+            
+            // Strongest Traits Logic
+            const sortedTraits = Object.entries(state.scores).sort((a,b) => b[1] - a[1]);
+            const top3 = sortedTraits.slice(0, 3);
+            const strongestTraitsCont = document.getElementById('result-strongest-traits');
+            const medals = ['🥇', '🥈', '🥉'];
+            strongestTraitsCont.innerHTML = top3.map((t, i) => {
+                const perc = Math.round((t[1] / sortedTraits[0][1]) * 100);
+                return `
+                    <div class="p-md rounded-xl bg-white/5 border border-white/10 text-center">
+                        <div class="text-xl mb-1">${medals[i]}</div>
+                        <div class="text-primary font-bold uppercase text-[10px] tracking-widest">${t[0]}</div>
+                        <div class="text-white font-headline-md">${perc}%</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Dynamic Explanation
+            document.getElementById('result-explanation').innerText = `You matched ${bestMatch.title} because ${top3[0][0]} was your strongest trait, followed by ${top3[1][0]} and ${top3[2][0]}. Your profile aligns with a ${bestMatch.tagline.toLowerCase().replace('.', '')} personality type. ${bestMatch.explanation}`;
+            
+            // Other Strong Matches
+            const otherCont = document.getElementById('result-other-matches');
+            otherCont.innerHTML = secondaryMatches.map(m => `
+                <div class="flex items-center justify-between p-md glass-card rounded-xl">
+                    <div class="flex items-center gap-md">
+                        <img src="${m.img}" class="w-10 h-10 rounded-lg object-cover" />
+                        <div>
+                            <p class="text-white font-bold text-sm">${m.title}</p>
+                            <p class="text-xs text-outline">${m.tagline}</p>
+                        </div>
+                    </div>
+                    <div class="text-primary font-bold text-sm">${Math.round(m.similarity)}% Match</div>
+                </div>
+            `).join('');
+
+            // Strengths
+            const strengthsCont = document.getElementById('result-strengths-list');
+            strengthsCont.innerHTML = (bestMatch.strengths || []).map(s => `
+                <div class="flex items-center gap-sm">
+                    <span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
+                    <span class="text-on-surface-variant">${s}</span>
+                </div>
+            `).join('');
+
+            // Careers
+            const careerCont = document.getElementById('result-careers');
+            careerCont.innerHTML = (bestMatch.careers || []).map(c => `
+                <span class="px-md py-xs rounded-full bg-primary/10 border border-primary/20 text-primary text-xs">${c}</span>
+            `).join('');
+
+            // Habit
+            document.getElementById('result-habit').innerText = bestMatch.growth.habit;
+
+            // Growth
+            const growthCont = document.getElementById('result-growth-highlights');
+            growthCont.innerHTML = `
+                <div class="p-md rounded-lg bg-white/5 border border-white/5">
+                    <p class="text-xs text-outline mb-1 uppercase">Core Strength</p>
+                    <p class="text-sm">${bestMatch.growth.strength}</p>
+                </div>
+                <div class="p-md rounded-lg bg-white/5 border border-white/5">
+                    <p class="text-xs text-outline mb-1 uppercase">Recommended Skill</p>
+                    <p class="text-sm">${bestMatch.growth.skill}</p>
+                </div>
+            `;
+
+            // Collabs
+            const collabCont = document.getElementById('result-collabs');
+            collabCont.innerHTML = bestMatch.workBestWith.map(name => `
+                <div class="flex items-center gap-sm p-sm glass-card rounded-lg">
+                    <span class="material-symbols-outlined text-tertiary">group</span>
+                    <span class="text-sm font-label-md">${name}</span>
+                </div>
+            `).join('');
+
+            // Fortune (Next 7 Days)
+            document.getElementById('result-fortune').innerText = `"${bestMatch.fortune}"`;
+
+            // Dev Mode Data
+            const devCont = document.getElementById('dev-trait-data');
+            devCont.innerHTML = TRAITS.map(t => `
+                <div class="flex justify-between border-b border-white/5 pb-1">
+                    <span>${t}:</span>
+                    <span class="text-primary font-bold">${state.scores[t]}</span>
+                </div>
+            `).join('');
+
+            generateRadarChart();
+            navigateTo('results');
+        }
+
+        function generateRadarChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            if (state.radarChart) state.radarChart.destroy();
+
+            const maxScore = Math.max(...Object.values(state.scores), 1);
+            const data = TRAITS.map(t => (state.scores[t] / maxScore) * 100);
+
+            state.radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: TRAITS.map(t => t.charAt(0).toUpperCase() + t.slice(1)),
+                    datasets: [{
+                        label: 'Behavioral Mix',
+                        data: data,
+                        fill: true,
+                        backgroundColor: 'rgba(192, 193, 255, 0.2)',
+                        borderColor: '#c0c1ff',
+                        pointBackgroundColor: '#c0c1ff',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#c0c1ff'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            pointLabels: { color: '#908fa0', font: { size: 10 } },
+                            ticks: { display: false, stepSize: 20 },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        function shareResults() {
+            const title = document.getElementById('result-title').innerText;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My FoodMind AI Profile',
+                    text: `I just found out my culinary personality is the ${title}! Discover yours at FoodMind AI.`,
+                    url: window.location.href
+                });
+            } else {
+                alert(`Results copied for ${title}! Share your unique persona with friends.`);
+            }
+        }
+
+        function downloadReport() {
+            window.print();
+        }
+
+        function restartQuiz() {
+            state.userName = '';
+            document.getElementById('user-name-input').value = '';
+            navigateTo('home');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Initializing any specific states
+        });
+    </script>
+</body></html>
